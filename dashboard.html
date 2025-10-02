@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decentralized AI Compute Network Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            color: #888;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-card .subtext {
+            color: #28a745;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* NEW grid for the bottom section */
+        .bottom-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .panel {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .worker-list, .job-list, .client-list {
+            margin-top: 20px;
+        }
+
+        /* NEW client-item style */
+        .worker-item, .job-item, .client-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        /* NEW client-item specific border */
+        .client-item {
+            border-left-color: #764ba2;
+        }
+
+        .worker-item h4, .job-item h4, .client-item h4 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .worker-item p, .job-item p, .client-item p {
+            color: #666;
+            font-size: 0.9em;
+            margin: 3px 0;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive, .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-verified {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .notification.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .notification.success {
+            background: #28a745;
+        }
+
+        .notification.error {
+            background: #dc3545;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .loading {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
+
+        @media (max-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="notification" id="notification"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Decentralized AI Compute Network</h1>
+            <p>Distributed GPU Computing for Machine Learning</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Workers</h3>
+                <div class="value" id="totalWorkers">0</div>
+                <div class="subtext" id="activeWorkers">0 Active</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Jobs</h3>
+                <div class="value" id="totalJobs">0</div>
+                <div class="subtext" id="completedJobs">0 Completed</div>
+            </div>
+            <div class="stat-card">
+                <h3>Success Rate</h3>
+                <div class="value" id="successRate">0%</div>
+                <div class="subtext">Network Performance</div>
+            </div>
+            <div class="stat-card">
+                <h3>Contract Balance</h3>
+                <div class="value" id="contractBalance">0</div>
+                <div class="subtext">Tokens</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="panel">
+                <h2>👷 Register Worker</h2>
+                <form id="workerForm">
+                    <div class="form-group">
+                        <label for="workerId">Worker ID</label>
+                        <input type="text" id="workerId" placeholder="e.g., worker_gpu_01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gpuType">GPU Type</label>
+                        <select id="gpuType" required>
+                            <option value="">Select GPU</option>
+                            <option value="RTX 4090">RTX 4090 (82.6 TFLOPS)</option>
+                            <option value="RTX 4080">RTX 4080 (48.7 TFLOPS)</option>
+                            <option value="RTX 3090">RTX 3090 (35.5 TFLOPS)</option>
+                            <option value="RTX 3080">RTX 3080 (29.8 TFLOPS)</option>
+                            <option value="A100">NVIDIA A100 (156 TFLOPS)</option>
+                            <option value="V100">NVIDIA V100 (125 TFLOPS)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="computeCapacity">Compute Capacity (TFLOPS)</label>
+                        <input type="number" id="computeCapacity" placeholder="e.g., 82.6" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="stakeAmount">Stake Amount (Tokens)</label>
+                        <input type="number" id="stakeAmount" placeholder="e.g., 150" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Register Worker</button>
+                </form>
+            </div>
+
+            <div class="panel">
+                <h2>👤 Register Client</h2>
+                <form id="clientForm">
+                    <div class="form-group">
+                        <label for="clientAddress">Client Address</label>
+                        <input type="text" id="clientAddress" placeholder="e.g., client_alice" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="initialBalance">Initial Balance (Tokens)</label>
+                        <input type="number" id="initialBalance" value="1000" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Register Client</button>
+                </form>
+
+                <h2 style="margin-top: 30px;">📋 Submit Job</h2>
+                <form id="jobForm">
+                    <div class="form-group">
+                        <label for="jobClientAddress">Client Address</label>
+                        <input type="text" id="jobClientAddress" placeholder="Enter your client address" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modelType">Model Type</label>
+                        <select id="modelType" required>
+                            <option value="">Select Model</option>
+                            <option value="linear_regression">Linear Regression</option>
+                            <option value="kmeans_clustering">K-Means Clustering</option>
+                            <option value="pca_analysis">PCA Analysis</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reward">Reward (Tokens)</label>
+                        <input type="number" id="reward" placeholder="e.g., 50" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Submit Job</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="panel full-width">
+            <h2>⚙️ Network Control</h2>
+            <div class="controls">
+                <button class="btn btn-success" onclick="startCoordination()">▶️ Start Auto-Coordination</button>
+                <button class="btn btn-danger" onclick="stopCoordination()">⏹️ Stop Auto-Coordination</button>
+                <button class="btn btn-warning" onclick="triggerCoordination()">⚡ Trigger Cycle</button>
+                <button class="btn btn-primary" onclick="fetchAllData()">🔄 Refresh Data</button>
+            </div>
+        </div>
+
+        <div class="bottom-content">
+            <div class="panel">
+                <h2>💼 Active Workers</h2>
+                <div class="worker-list" id="workerList">
+                    <div class="loading">Loading workers...</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>👥 Registered Clients</h2>
+                <div class="client-list" id="clientList">
+                    <div class="loading">Loading clients...</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>📊 Recent Jobs</h2>
+                <div class="job-list" id="jobList">
+                    <div class="loading">Loading jobs...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+
+        const gpuCapacity = {
+            'RTX 4090': 82.6, 'RTX 4080': 48.7, 'RTX 3090': 35.5,
+            'RTX 3080': 29.8, 'A100': 156.0, 'V100': 125.0
+        };
+
+        document.getElementById('gpuType').addEventListener('change', function() {
+            const capacity = gpuCapacity[this.value];
+            if (capacity) {
+                document.getElementById('computeCapacity').value = capacity;
+            }
+        });
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        async function handleFormSubmit(event, url, data, buttonText) {
+            event.preventDefault();
+            const form = event.target;
+            const button = form.querySelector('button[type="submit"]');
+            const originalButtonText = button.textContent;
+            
+            button.disabled = true;
+            button.textContent = 'Submitting...';
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const errorResult = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+                    throw new Error(errorResult.error || `HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(result.message || 'Operation successful!', 'success');
+                    form.reset();
+                    fetchAllData();
+                } else {
+                    showNotification(result.error || 'Operation failed', 'error');
+                }
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            } finally {
+                button.disabled = false;
+                button.textContent = originalButtonText;
+            }
+        }
+        
+        document.getElementById('workerForm').addEventListener('submit', (e) => {
+            const data = {
+                worker_id: document.getElementById('workerId').value,
+                gpu_type: document.getElementById('gpuType').value,
+                compute_capacity: parseFloat(document.getElementById('computeCapacity').value),
+                stake_amount: parseInt(document.getElementById('stakeAmount').value, 10)
+            };
+            handleFormSubmit(e, `${API_URL}/worker/register`, data);
+        });
+
+        document.getElementById('clientForm').addEventListener('submit', (e) => {
+            const data = {
+                client_address: document.getElementById('clientAddress').value,
+                initial_balance: parseInt(document.getElementById('initialBalance').value, 10)
+            };
+            handleFormSubmit(e, `${API_URL}/client/register`, data);
+        });
+
+        document.getElementById('jobForm').addEventListener('submit', (e) => {
+            const data = {
+                client_address: document.getElementById('jobClientAddress').value,
+                model_type: document.getElementById('modelType').value,
+                reward: parseInt(document.getElementById('reward').value, 10)
+            };
+            handleFormSubmit(e, `${API_URL}/job/submit`, data);
+        });
+
+        async function networkControl(endpoint, successMessage) {
+            try {
+                const response = await fetch(`${API_URL}/network/coordination/${endpoint}`, { method: 'POST' });
+                if (!response.ok) throw new Error('Network response was not ok.');
+                await response.json();
+                showNotification(successMessage, 'success');
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        function startCoordination() { networkControl('start', 'Auto-coordination started!'); }
+        function stopCoordination() { networkControl('stop', 'Auto-coordination stopped!'); }
+        async function triggerCoordination() {
+            await networkControl('trigger', 'Coordination cycle triggered!');
+            setTimeout(fetchAllData, 1000);
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_URL}/network/stats`);
+                if (!response.ok) throw new Error('Failed to fetch stats');
+                const data = await response.json();
+
+                document.getElementById('totalWorkers').textContent = data?.contract_state?.total_workers || 0;
+                document.getElementById('activeWorkers').textContent = `${data?.contract_state?.active_workers || 0} Active`;
+                document.getElementById('totalJobs').textContent = data?.performance?.total_jobs || 0;
+                document.getElementById('completedJobs').textContent = `${data?.performance?.completed_jobs || 0} Completed`;
+                document.getElementById('successRate').textContent = `${(data?.performance?.success_rate || 0).toFixed(1)}%`;
+                document.getElementById('contractBalance').textContent = (data?.contract_state?.contract_balance || 0).toFixed(0);
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        function createParagraph(content) {
+            const p = document.createElement('p');
+            p.innerHTML = content;
+            return p;
+        }
+
+        async function loadWorkers() {
+            const workerList = document.getElementById('workerList');
+            try {
+                const response = await fetch(`${API_URL}/workers`);
+                if (!response.ok) throw new Error('Failed to fetch workers');
+                const data = await response.json();
+                
+                workerList.innerHTML = '';
+                
+                if (!data.workers || data.workers.length === 0) {
+                    workerList.innerHTML = '<p style="color: #999;">No workers registered yet.</p>';
+                    return;
+                }
+
+                data.workers.forEach(worker => {
+                    const item = document.createElement('div');
+                    item.className = 'worker-item';
+                    const h4 = document.createElement('h4');
+                    h4.textContent = worker.worker_id;
+                    item.appendChild(h4);
+                    item.appendChild(createParagraph(`<strong>GPU:</strong> ${worker.gpu_type}`));
+                    item.appendChild(createParagraph(`<strong>Reputation:</strong> ${worker.reputation.toFixed(1)}/100`));
+                    item.appendChild(createParagraph(`<strong>Jobs Completed:</strong> ${worker.jobs_completed}`));
+                    const statusP = document.createElement('p');
+                    const statusSpan = document.createElement('span');
+                    statusSpan.className = `status-badge ${worker.is_active ? 'status-active' : 'status-inactive'}`;
+                    statusSpan.textContent = worker.is_active ? 'Active' : 'Inactive';
+                    statusP.appendChild(statusSpan);
+                    item.appendChild(statusP);
+                    workerList.appendChild(item);
+                });
+            } catch (error) {
+                console.error('Error loading workers:', error);
+                workerList.innerHTML = '<p style="color: #dc3545;">Error loading workers.</p>';
+            }
+        }
+        
+        // NEW function to load clients
+        async function loadClients() {
+            const clientList = document.getElementById('clientList');
+            try {
+                // ASSUMPTION: Your backend has a new endpoint at /clients
+                const response = await fetch(`${API_URL}/clients`);
+                if (!response.ok) throw new Error('Failed to fetch clients');
+                const data = await response.json();
+                
+                clientList.innerHTML = ''; // Clear existing content
+                
+                if (!data.clients || data.clients.length === 0) {
+                    clientList.innerHTML = '<p style="color: #999;">No clients registered yet.</p>';
+                    return;
+                }
+
+                data.clients.forEach(client => {
+                    const item = document.createElement('div');
+                    item.className = 'client-item';
+                    
+                    const h4 = document.createElement('h4');
+                    h4.textContent = client.client_address;
+                    item.appendChild(h4);
+
+                    item.appendChild(createParagraph(`<strong>Balance:</strong> ${client.balance.toFixed(0)} tokens`));
+
+                    clientList.appendChild(item);
+                });
+            } catch (error) {
+                console.error('Error loading clients:', error);
+                clientList.innerHTML = '<p style="color: #dc3545;">Error loading clients.</p>';
+            }
+        }
+
+        async function loadJobs() {
+            const jobList = document.getElementById('jobList');
+            try {
+                const response = await fetch(`${API_URL}/jobs`);
+                if (!response.ok) throw new Error('Failed to fetch jobs');
+                const data = await response.json();
+                
+                jobList.innerHTML = '';
+
+                if (!data.jobs || data.jobs.length === 0) {
+                    jobList.innerHTML = '<p style="color: #999;">No jobs submitted yet.</p>';
+                    return;
+                }
+
+                const recentJobs = data.jobs.slice(-10).reverse();
+
+                recentJobs.forEach(job => {
+                    const item = document.createElement('div');
+                    item.className = 'job-item';
+                    const h4 = document.createElement('h4');
+                    h4.textContent = `Job ${job.job_id.substring(0, 8)}...`;
+                    item.appendChild(h4);
+                    item.appendChild(createParagraph(`<strong>Client:</strong> ${job.client}`));
+                    item.appendChild(createParagraph(`<strong>Model:</strong> ${job.model_type.replace('_', ' ')}`));
+                    item.appendChild(createParagraph(`<strong>Reward:</strong> ${job.reward} tokens`));
+                    item.appendChild(createParagraph(`<strong>Worker:</strong> ${job.worker || 'Unassigned'}`));
+                    const statusP = document.createElement('p');
+                    const statusSpan = document.createElement('span');
+                    const statusClass = (job.status || 'pending').toLowerCase();
+                    statusSpan.className = `status-badge status-${statusClass}`;
+                    statusSpan.textContent = (job.status || 'PENDING').toUpperCase();
+                    statusP.appendChild(statusSpan);
+                    item.appendChild(statusP);
+                    jobList.appendChild(item);
+                });
+            } catch (error) {
+                console.error('Error loading jobs:', error);
+                jobList.innerHTML = '<p style="color: #dc3545;">Error loading jobs.</p>';
+            }
+        }
+        
+        async function fetchAllData() {
+            await Promise.all([
+                loadStats(),
+                loadWorkers(),
+                loadJobs(),
+                loadClients() // ADDED call to the new function
+            ]);
+        }
+        
+        (function refreshLoop() {
+            fetchAllData().finally(() => {
+                setTimeout(refreshLoop, 5000);
+            });
+        })();
+    </script>
+</body>
+</html>
